@@ -53,3 +53,38 @@ Việc này tương tự như khi ta đóng gói đối tượng, và chỉ thò
 
 - Sau khi biết về Encapsulation rồi, thì ta có thể làm gì để refactor lại source code?
 	- Check lại các class, đặt "đúng chỗ" cho các method public và private. Methods nào mà muốn từ object bên ngoài có thể gọi được thì để public, còn không thì nên để protected/ private.
+
+
+## Inheritance - Kế thừa
+
+![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAq9ofazSiCpBKEG0pweawGgC2Jpq9i3JWEw&s)
+
+### Definition
+
+Kế thừa là khả năng xây dựng class mới dựa trên các class đã tồn tại. Nhờ kế thừa, ta có thể tái sử dụng lại code của class cha (mà không cần sao chép y nguyên code từ class cha vào class con). 
+Ngoài ra, ta còn có thể mở rộng thêm class hiện tại, đưa thêm các behaviors mới.
+
+Kế thừa có một rủi ro rất lớn, đó là bạn có thể khiến cho class con hoạt động không giống như class cha. (vi phạm nguyên tắc thay thế Liskov). Điều này dẫn tới bug khó lường trước, và cũng là nguyên nhân dẫn tới 1 nguyên tắc quan trọng nữa khi lập trình OOP: `Composition over Inheritance` - Ưu tiên sử dụng thành phần thay vì kế thừa.
+
+### Drawback
+
+1. Tight Coupling
+	- Mỗi khi thay đổi ở base class sẽ ảnh hưởng trực tiếp tới các class con. Hoặc nếu có bug ở code class cha, khả năng các class con cũng bị ảnh hưởng.
+	- Nếu base class đã được sử dụng rộng rãi trong source code, việc modify base class sẽ rất khó khăn, vì ảnh hưởng của nó nhiều
+2. Limited Flexibility
+	- Kế thừa là mối quan hệ "is-a", nên thỉnh thoảng sẽ gặp vài cases đặc biệt, làm cho class con phải kế thừa một số properties/methods mà nó không cần đến =)) Ví dụ: `Bird` có method `fly`. `Penguin` là chim, có thể kế thừa class `Bird`, nhưng nó lại không biết bay => Không cần tới method `fly`, nhưng vẫn phải kế thừa.
+3. Kế thừa nhiều lớp
+	- Lạm dụng kế thừa khiến cho cây kế thừa bị dài, phức tạp => Khó maintain. Ví dụ: `Object -> Animal -> Mammal -> Primate -> Human`
+4. Vi phạm Liskov Substitution Principle
+	- TODO
+
+
+## Polymorphism
+
+![](https://codegym.cc/images/article/1771301a-66f1-469c-868a-41809dc18672/original.png)
+
+### Definition
+
+Đa hình - nhiều hình dạng - là một concept cho phép các classes khác nhau có thể được đối xử như là objects của common superclass. Ví dụ: Tôi không cần biết ông là động vật loại nào, nhưng tôi biết ông có thể `eat()`, hoặc `move()`. 
+
+Khi vào bãi đỗ xe, có rất nhiều loại xe. Bạn có thể không biết loại xe trước mặt là xe gì, nhưng bạn vẫn có thể khởi động được xe và lái đi.

@@ -1,14 +1,16 @@
 # OOP 
 
-### Abstraction - Trừu tượng 
+## Abstraction - Trừu tượng 
 
-#### Definition
+![](https://logicmojo.com/assets/dist/new_pages/images/abstraction.jpg)
+
+### Definition
 
 Trừu tượng là quá trình mô hình hóa, cố gắng mô tả một đối tượng/ hành động/ hiện tượng trong thế giới thực vào trong code.
 
 Ví dụ: Con chó có 4 chân, xe 4 bánh, người thì có hành động ăn, uống, đi lại, ...
 
-#### Questions
+### Questions
 
 - Tại sao chúng ta cần tạo ra abstract class, sau đó là các class con và cho kế thừa class abstract? Trong khi ta có thể tạo ra class con luôn, miễn là vẫn đảm bảo class con luôn có đủ method cần thiết?
 	- *Common Interface*: Abstract classes cho phép chúng ta define common interface. Nó ensure lại rằng các subclass sẽ phải implement các methods này, từ đó *cung cấp tính nhất quán* cho source code của mình.
@@ -17,9 +19,11 @@ Ví dụ: Con chó có 4 chân, xe 4 bánh, người thì có hành động ăn,
 	- *Design clarity*: Việc define behavior trong abstract class giúp cho việc đọc code được rõ ràng hơn
 
 
-### Encapsulation - Đóng gói
+## Encapsulation - Đóng gói
 
-#### Definition
+![](https://www.scientecheasy.com/wp-content/uploads/2018/06/encapsulation-in-java.png)
+
+### Definition
 Đóng gói là quá trình "bọc" đối tượng của ta lại, chỉ "chìa" à các phương thức cần thiết để tương tác với đối tượng đó mà thôi.
 
 Quá trình "đóng gói" này diễn ra thường ngày trong cuộc sống của chúng ta. Ta bấm nút khởi động xe, xe có thể khởi động, nhưng thực tế ta không biết điều gì thực sự xảy ra khi ta bấm nút: Vi mạch thực hiện ra sao, lấy năng lượng như thế nào, tại sao máy lại khởi động được, ....
@@ -30,7 +34,7 @@ Việc này tương tự như khi ta đóng gói đối tượng, và chỉ thò
 - `protected` => Cho phép các lớp con của lớp cha được phép sử dụng
 - `private` => Chỉ cho phép các method thuộc class đó được phép truy cập (các lớp con cũng không được phép).
 
-#### Questions
+### Questions
 
 - Tại sao tôi lại cần phải đóng gói?
 	- *Data protection*: 

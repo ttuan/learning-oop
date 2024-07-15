@@ -135,6 +135,126 @@ Dependencies always have a direction. Quyết định chiều phụ thuộc như
 
 ## 4. Creating Flexible Interfaces
 
+### Understanding Interfaces
+
+- Exposed methods: Methods nào sẽ được public ra ngoài, *cho objects nào dùng*. - public interface.
+
+- The word interface can refer to a number of different concepts. Here the term is used to refer to the kind of interface that is within a class. Classes implement meth- ods; some of those methods are intended to be used by others, and these methods make up its public interface.
+- Tạo interface. Các classes sẽ implements required methods - act like the interface kind of thing.
+
+### Define Interfaces
+- Tưởng tượng interfaces như 1 cái menu trong nhà hàng. Khách hàng nhìn thấy menu, nhưng không cần biết 1 món ăn sẽ được làm như thế nào. Họ chỉ cần như thế, nếu không thì họ sẽ phải biết từng món dùng nguyên liệu gì, ta nấu ra sao, ... -> không cần thiết.
+
+- *Public Interfaces* - methods được public ra ngoài của 1 class
+	- Reveal its primary responsibility.
+	- Are expected to be invoked by others.
+	- Will not change on a whim.
+	- Are safe for others to depend on.
+	- Are thoroughly documented in the tests.
+- *Private Interfaces* - tất cả các methods còn lại
+	- Handle implementation details.
+	- Are not expected to be sent by other objects.
+	- Can change for any reason whatsoever.
+	- Are unsafe for others to depend on.
+	- May not even be referenced in the tests.
+- *Responsibilities, Dependencies, and Interfaces*
+	- ***public methods should read like a description of responsibilities.***
+
+### Find the Public Interface
+
+> The design goal, as always, is to retain maximum future flexibility while writing only enough code to meet today’s requirements. Good public interfaces reduce the cost of unanticipated change; bad public interfaces raise it.
+
+#### Constructing and Intention
+
+- Từ yêu cầu của feature, cần detect ra được *domain objects*. Eg: Article, User, ContentPartner, Medium, ... - Stand for big, visible real-world things, representation in our database.
+- Khi thiết kế, chúng ta chú ý vào domain objects, chúng sẽ là object wrap bên vòng ngoài. Tuy nhiên, core business logic là phần *messages* được gửi giữa những domain objects này.
+
+#### Using Sequence Diagrams
+
+- UML
+- Case Study
+	- (1) Customer send message to Trip: `.suitable_trip(on_date, of_difficulty, need_bike)` - Tìm chuyến du lịch dựa vào ngày, độ khó, và show ra chuyến đó có cần xe hay không.
+		- Ở đây tồn tại 1 vấn đề: Đoạn tìm kiếm xe đạp không phải là nhiệm vụ của Trip
+	- (2) Customer send 2 messages:
+		- To Trip: `.suitable_trip(on_date, of_difficulty)` => Lấy ra list trips
+		- To Bicycle: each trips: `.suitable_bike(trip_date, route_type)` 
+		- => Trông có vẻ okie vì nó đã loại bỏ phần responsibilities từ Trip. Tuy nhiên, nó lại chuyển phần này sang cho Customer :v
+
+#### Asking for "What" instead of Telling "How"
+
+- Use Cases:
+	- (1) Trip có method `bicycles`. Với mỗi bike, nó sẽ call sang `Mechanic` để: `clean_bicycle(bike)`, `pump_tires(bike)`, `lube_chain(bike)`, ...
+		- Từ thiết kế này, ta thấy là: 
+			- Trip có 1 public interfaces, có bao gồm method `bicycles`
+			- Public interfaces của Mechanic bao gồm các methods: `clean_bicycle, pump_tire, lube_chain, check_brakes`
+			- Trip expect là object mechanic phải respond lại các methods trên.
+		- Thiết kế này làm Trip biết quá nhiều về Mechanic, nên nó sẽ luôn phải thay đổi nếu Mechanic có thay đổi/ mở rộng.
+	- (2) Đổi lại thiết kế: Đưa phần prepare từ Trip sang Mechanic, sau đó Mechanic public 1 hàm `prepare_bicycle(bike)` sang cho Trip. Logic detail được đưa lại về Mechanic
+		- Thiết kế bao gồm:
+			- Trip có 1 public interface, chứa method `bicycles`
+			- Mechanic chứa 1 public interfaces, có method `prepare_bicycle`
+			- Trip expect object mechanic phải response lại method `prepare_bicycle`
+
+=> Trip asking for "WHAT" instead of "HOW" Mechanic prepare bike.
+
+#### Seeking Context Independence
+- Simple Context - expect few things from their surrounding.
+- Với usecase bên trên, ta có thể đổi thành:
+	- (3) What Trip wants - `prepare_trip` => Dùng Dependencies Injection để truyền `trip` vào Mechanic, sau đó Mechanic gọi lấy `bicycles`, rồi tự chuẩn bị `prepare_bike` trong class mechanic luôn.
+		- The public interface for Trip includes bicycles.
+		- The public interface for Mechanic includes prepare_trip and perhaps prepare_bicycle.
+		- Trip expects to be holding onto an object that can respond to prepare_trip.
+		- Mechanic expects the argument passed along with prepare_trip to respond to bicycles.
+
+#### Trusting Other Objects
+- 3 cách design bên trên thể hiện cho 3 câu nói: 
+	- (1) - I know what I want, and I know how you do it.
+	- (2) - I know what I want, and I know what you do.
+	- (3) - I know what I want, and I trust you to do your part.
+
+#### Using Messages to Discover Objects
+#### Creating a Message-Based Application
+
+### Writing Code that Puts Its Best (Inter)Face Forward
+
+> Think about interfaces. Create them intentionally. It is your interfaces, more than all of your tests and any of your code, that define your application and determine its future.
+
+Chương này hướng dẫn về rules of thumb khi create interfaces.
+
+#### Create Explicit Interfaces
+- Every time you create a class, declare its interfaces. Methods in the public interface should:
+	- Be explicitly identified as such.
+	- Be more about what than how.
+	- Have names that, insofar as you can anticipate, will not change.
+	- Prefer keyword arguments.
+- Sử dụng các keyword: `public`, `protected`, `private` khi có thể.
+
+#### Honor the Public Interfaces of Others
+- Chỉ sử dụng public thôi. Hạn chế tối đa việc call private methods của external framework/class/...
+
+#### Exercise Caution When Depending on Private Interfaces
+- Khi ta buộc phải call private interfaces, hãy áp dụng các quy tắc Isolate như ở Chương 3.
+
+#### Minimize Context
+
+> Construct public interfaces with an eye toward minimizing the context they require from others. Keep the what versus how distinction in mind; create public methods that allow senders to get what they want without knowing how your class implements its behavior.
+
+### The Law of Demeter
+
+> Demeter restricts the set of objects to which a method may send messages; it prohib- its routing a message to a third object via a second object of a different type. Demeter is often paraphrased as “only talk to your immediate neighbors” or “use only one dot.”
+
+Không send message qua nhiều object khác nhau, mà dữ liệu trả về lại thuộc type khác nhau. Tốt nhất chỉ nên "use only one dot". (not: `customer.bicycle.wheel.tire`)
+
+Sử dụng `delegate` để tránh vi phạm Law of Demeter.
+
+
+> [!note] Notes
+> 
+> Object-oriented applications are defined by the messages that pass between objects. This message passing takes place along “public” interfaces; well-defined public inter- faces consist of stable methods that expose the responsibilities of their underlying classes and provide maximal benefit at minimal cost.
+> 
+> Focusing on messages reveals objects that might otherwise be overlooked. When messages are trusting and ask for what the sender wants instead of telling the receiver how to behave, objects naturally evolve public interfaces that are flexible and reusable in novel and unexpected ways.
+
+
 ## 5. Reducing Costs with Duck Typing
 
 ## 6. Acquiring Behavior through Inheritance

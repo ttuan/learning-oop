@@ -98,6 +98,40 @@ Các object mà biết càng nhiều về nhau thì sẽ càng tạo ra nhiều 
 Dependencies always have a direction. Quyết định chiều phụ thuộc như thế nào cũng là 1 technique khó khăn.
 
 #### Reversing Dependencies
+- Hiện tại thì Gear đang phụ thuộc vào Wheel, thông qua hàm `diameter`. Tuy nhiên mình có thể revert dependencies direction, đổi cho Wheel phụ thuộc vào Gear bằng cách khởi tạo wheel bằng cách truyền vào `gear`, và tính `gear_inches` thông qua instance `gear` đó.
+- Nếu application của mình không bao giờ thay đổi, thì okie, chọn dependencies theo direction nào cũng được :v Nhưng do app mình sẽ luôn thay đổi => nếu lựa chọn 'sai' direction, app sẽ rất khó để maintain.
+
+#### Choosing Dependency Direction
+
+> [!note] Notes
+> 
+> ***depend on things that change less often than you do.***
+
+- Nên phụ thuộc vào thằng nào ít khi bị thay đổi hơn. Vì trong thực tế:
+	- Nếu requirements thay đổi, thì 1 số class dễ phải thay đổi hơn các class khác. (ví dụ: `PurchaseService` logic thì dễ thay đổi hơn class `Order`)
+	- Concrete class thì dễ thay đổi hơn Abstract classes. (Abstract classes define các hàm nhưng không implement logic cụ thể => Nó ít bị thay đổi hơn các class cụ thể)
+	- Việc thay đổi 1 class mà có nhiều dependencies, sẽ khiến cho nhiều chỗ bị ảnh hưởng.
+
+- *Understanding Likelihood of Change* - Tìm ra những objects dễ phải thay đổi.
+	- Trong source code dự án, ta nên có "ranking" cho từng classes. Đâu là những classes *dễ bị thay đổi, đâu là class ít khi thay đổi*.  - [[INBOX/OOD Ranking classes|OOD Ranking classes]]
+	- Ý tưởng là sẽ đi phân tích dựa trên: 
+		- Domain Knowledge: Core business logic hoặc domain entities (models) thường ít bị thay đổi. Nhưng những class dạng application-specific/ infrastructure concerns thì dễ thay đổi hơn
+		- External Dependencies, Technology Choices, Coupling and Cohesion (dễ thay đổi khi dependencies thay đổi), ...
+- *Recognizing Concretions and Abstractions* - Tạo abstract class, vì nó stable hơn concrete class
+	- Trong ví dụ phần trên, khi dùng dependency injection - truyền object `wheel` vào class Gear, ta đã khiến Gear phụ thuộc vào 1 thứ `abstract` hơn. Nó chỉ cần biết rằng object truyền vào có method `diameter` là được - Duck Typing
+- *Avoiding Dependent-Laden Classes* - Luôn tránh việc để 1 objects phụ thuộc quá nhiều vào các object khác.
+
+
+
+- *Finding the Dependencies That Matter*: Fill class vào metric: *likelihood of change* vs *number of dependents*
+
+![[00 Meta/01 Attachments/Images Vault/Pasted image 20240715115923.png]]
+
+> [!note] Notes
+> 
+> Dependency management is core to creating future-proof applications. Injecting dependencies creates loosely coupled objects that can be reused in novel ways. Iso- lating dependencies allows objects to quickly adapt to unexpected changes. Depend- ing on abstractions decreases the likelihood of facing these changes.
+> 
+> The key to managing dependencies is to control their direction. The road to maintenance nirvana is paved with classes that depend on things that change less often than they do.
 
 ## 4. Creating Flexible Interfaces
 

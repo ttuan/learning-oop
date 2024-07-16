@@ -257,6 +257,63 @@ Sử dụng `delegate` để tránh vi phạm Law of Demeter.
 
 ## 5. Reducing Costs with Duck Typing
 
+### Understanding Duck Typing
+#### Overlooking the Duck
+#### Compounding the Problem
+- Count the number of new dependencies khi muốn refactor =)) 
+	- specific classes, explicit names of those classes; the names of the messages that each class understands, along with the args that those messages require.
+
+#### Finding the Duck
+- Nhận dạng qua `case ... when`, find the duck, and implement 'quack' method.
+
+#### Consequences of Duck Typing
+- Code cụ thể (check type, class và gọi method và args tương ứng) có ưu điểm là dễ hiểu, nhưng sẽ nguy hiểm khi ta mở rộng. Code theo kiểu duck typing thì hướng abstract hơn, tuy nó 'khó hiểu' hơn 1 chút nhưng một khi hiểu, sẽ rất dễ để mở rộng với type mới sau này. 
+
+> This tension between the costs of concretion and the costs of abstraction is fundamental to object-oriented design.
+
+### Writing Code that Relies on Ducks
+
+#### Recognizing Hidden Ducks ⭐⭐
+- *Case Statements that Switch on Class*
+	- Khi thấy `case ... when` mà checking Class => Khả năng đây chính là hidden ducks
+
+- *kind_of? and is_a?*
+	- 2 hàm này dùng để check class của object hiện tại => Cũng là dấu hiệu nhận biết hidden ducks. Eg: `preparer.kind_of?(Mechanic)`
+
+- *responds_to?*
+	- Hàm này dùng để check 1 object có phản hồi lại method xxx không. eg: `preparer.respond_to?(:prepare_bicycles)`
+	- Mặc dù cách check này đã remove dependencies vào Class name, nhưng đoạn code trên vẫn không khác gì việc checking class.
+
+#### Placing Trust in Your Ducks
+
+> Flexible applications are built on objects that operate on trust; it is your job to make your objects trustworthy. When you see these code patterns, concentrate on the offending code’s expectations and use those expectations to find the duck type. Once you have a duck type in mind, define its interface, implement that interface where necessary, and then trust those implementers to behave correctly.
+
+#### Choosing Your Ducks Wisely
+
+- Mục đích sau cùng của OOD là giảm cost. Nếu sử dụng duck type mà giảm unstable dependencies thì hãy làm =)) (Tác giả có đưa ra ví dụ hàm `find_by_ids` trong Rails, vẫn dùng `when 0, when 1` bình thường. Lý do là dependencies của nó là Array và NilClass => 2 classes này đều rất stable, nên k cần phải dùng duck type trong case này)
+
+### Conquering a Fear of Duck Typing
+
+#### Subverting Duck Types with Static Typing
+- Dynamic Typing linh hoạt, nhưng cũng có nhược điểm của nó, do ta không kiểm soát được thứ gì "thực sự" ở trong 1 array. (ví dụ: `[1, "hello", {a: 2}]`)
+
+> Duck typing provides a way out of this trap. It removes the dependencies on class and thus avoids the subsequent type failures. It reveals stable abstractions on which your code can safely depend.
+
+#### Static versus Dynamic Typing
+
+#### Embracing Dynamic Typing
+
+- Duck Typing sẽ thể hiện được tối đa sức mạnh ở những ngôn ngữ dynamic typing. 
+- Nếu cần, hãy sử dụng handle nil pattern để hạn chế lỗi raise không mong muốn khi sử dụng duck typing ở những ngôn ngữ dynamic typing.
+
+> [!note] Notes
+> 
+> Messages are at the center of object-oriented applications, and they pass among objects along public interfaces. Duck typing detaches these public interfaces from specific classes, creating virtual types that are defined by what they do instead of by who they are.
+> 
+> Duck typing reveals underlying abstractions that might otherwise be invisible. Depending on these abstractions reduces risk and increases flexibility, making your application cheaper to maintain and easier to change.
+
+
+
 ## 6. Acquiring Behavior through Inheritance
 
 ## 7. Sharing Role Behavior with Modules

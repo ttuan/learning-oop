@@ -316,6 +316,78 @@ Sử dụng `delegate` để tránh vi phạm Law of Demeter.
 
 ## 6. Acquiring Behavior through Inheritance
 
+
+> Well-designed applications are constructed of ***reusable code***. Small, trustworthy self- contained objects with ***minimal context, clear interfaces, and injected dependencies are inherently reusable***.
+
+### Understanding Classical Inheritance
+
+- Kế thừa, đơn giản là kiểu abstraction and *automatic message delegation* => forwarding path for not-understood messages.
+
+### Recognizing Where to Use Inheritance
+
+- Concrete class basic thường ok, nhưng sẽ phình to nếu như add thêm xử lý cho các type khác nhau.
+
+- *Embedding Multiple Types*: Add thêm các xử lý type khác
+- *Finding the Embedded Types*: Chú ý tới các key như `type/category/check class_name`. Đây là kiểu related types that share common behavior but differ along some dimension.
+
+- Kế thừa, gắn kết 2 objects trong 1 mối quan hệ, mà nếu object đầu tiên nhận tin nhắn, mà không hiểu tin nhắn đó, thì có thể forwards, hoặc delegates tin nhắn đó cho object thứ 2.
+
+### Misapplying Inheritance
+
+### Finding the Abstraction
+
+- 2 rules trong Kế thừa:
+	- Objects mà mình đang modeling phải thực sự có quan hệ cha-con (generalization-specialization relationship)
+	- You must use the correct coding techniques.
+
+#### Creating an Abstract Superclass
+
+- Tạo class cha là Abstract Class. Tạo ra abstract class để các class con có thể kế thừa.
+
+> Abstract classes exist to be subclassed. This is their sole purpose. They provide a common repository for behavior that is shared across a set of subclasses—subclasses that in turn supply specializations.
+
+- Kế thừa sẽ sinh ra cost (tạo thêm các class mới, và nguy cơ phải custom lại các class con khá nhiều). Các tốt nhất để minimize cost đó là maximize cơ hội để tạo được abstraction trước khi để các class con depend on the abstraction.
+
+> A decision to proceed with the hierarchy accepts the risk that you may not yet have enough information to identify the correct abstraction.
+> ...
+> You should wait, if you can, but don’t fear to move forward based on two concrete cases if this seems best.
+
+- *Promoting Abstract Behavior*
+	- ***push-everything-down-and-then-pull-some-things-up strategy is an important part of this refactoring.***: Đưa hết behavior của class cha xuống class con, sau đó lại promote behavior chung lên class cha =))) 
+	- Promote kiểu này thì nếu có fail (do detect sai behavior để promote) cũng sẽ gây hậu quả nhỏ, do phần lớn code đã nằm ở class con rồi.
+	- Nếu tách code dần từ class cha xuống class con, thì có khả năng behavior của class cha không thể áp dụng với mọi class con. Điều này vi phạm basic rule của Kế thừa: *Subclass must be truly specializations of their superclasses.* - Có vẻ giống nguyên tắc LISKOV
+
+> [!note] Notes
+>
+> The general rule for refactoring into a new inheritance hierarchy is to arrange code so that you can promote abstractions rather than demote concretions.
+
+
+- *Using the template method pattern*
+	- Superclass thường sẽ define các templates - basic structure. Các subclass sẽ nhìn vào basic structure đó để implement custom logic.
+	- Một khi đã define template structure, bạn *phải* force tất cả các class con implement behavior theo structure đó. Cách tốt nhất là `raise NotImplementedError` trong class cha.
+
+### Managing Coupling between Superclasses and Subclasses
+
+- Chia nhỏ methods, implement abstract / template methods structure, các class con implement chúng. Nghe có vẻ okie. Nhưng ở đây tồn tại 1 vấn đề: Các class con vẫn đang gọi "super" để call lại implement của class cha. => Require Class con phải biết cách interact với class cha. Việc này tạo thêm dependencies, *force tất cả các subclass mới đều phải gọi super để call implement của class cha*.
+	- Việc này push algorithm down into the subclasses, forcing each to explicitly send 'super' to participate => Duplicate code (đoạn gọi super) giữa các class con.
+	- Ngoài ra, khi lập trình viên khác implement mới 1 subclass, mặc dù họ đã tạo ra ***correct specializations*** but can easily forget to send super => Vẫn lỗi, dù tôi đã implement folow abstract behavior trong class cha.
+
+- *Decoupling Subclasses Using Hook Messages* 👍
+	- Để tránh việc gọi `super` trong subclasses, ta có thể implement hook messages.
+	- Ví dụ: `post_initialize(opts)`, `local_spares` => Các methods này được implement trong subclasses.
+
+
+### Summary
+
+- Kế thừa: giải quyết các vấn đề liên quan tới related types - những thằng share với nhau nhiều behavior chung, nhưng lại khác nhau ở 1 số chỗ. Nó cho phép ***isolate shared code, implement comment algorithms in an abstract class, while providing a structure that permits subclasses to contribute specializations.***
+
+- Cách tốt nhất để tạo ra 1 abstract superclass đó là: 
+	- Push hết code xuống subclass. Sau đó pull nó dần lên superclass.
+	- Xác định correct abstraction sẽ dễ hơn nếu ta có ít nhất 3 concrete classes.
+
+- Abstract superclasses use the template method pattern to invite inheritors to supply specializations, and they use hook methods to allow these inheritors to contrib- ute these specializations without being forced to send super. Hook methods allow subclasses to contribute specializations without knowing the abstract algorithm. They remove the need for subclasses to send super and therefore reduce the coupling between layers of the hierarchy and increase its tolerance for change.
+
+
 ## 7. Sharing Role Behavior with Modules
 
 ## 8. Combining Objects with Composition

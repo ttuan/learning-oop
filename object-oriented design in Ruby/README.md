@@ -390,6 +390,88 @@ Sử dụng `delegate` để tránh vi phạm Law of Demeter.
 
 ## 7. Sharing Role Behavior with Modules
 
+> Because no design technique is free, creating the most cost-effective application requires making informed tradeoffs between the relative costs and likely benefits of alternatives.
+
+### Understanding Roles
+
+- Một vài objects không liên quan tới nhau, nhưng lại cùng nhau share behaviors gì đó. Cái đó gọi là *role*.
+
+#### Finding Roles
+- Một object có thể gửi được những messages sau:
+	- Tất cả các methods mà nó đã implements
+	- Tất cả các methods ở trong các object trên nó trong cây kế thừa.
+	- Tất cả các methods trong các modules mà nó đã include
+	- Tất cả các methods trong các modules được add vào object trên nó trong cây kế thừa.
+
+#### Organizing Responsibilities
+#### Removing Unnecessary Dependencies
+- *Discovering the Schedulable Duck Type*: Để remove phần check class type, ta sẽ implement 1 interface có chứa `lead_day`, sau đó call `target.lead_day` là okie.
+- *Letting Objects Speak for Themselves*: 
+	- Ví dụ: `StringUtils.empty?(some_string)` is a bad idea. `some_string` là 1 object, và nó có behaviors riêng => `some_string.empty?`
+	- Schedule cũng thế, nó không nên call object khác (target) để xem nó có `schedulable` hay không.
+
+#### Writing the Concrete code
+- Khi muốn build Schedulable role interface, ta cần focus vào 2 vđ:
+	- What the code should do
+	- Where the code should live
+- Cách đơn giản nhất là chia nhỏ 2 câu hỏi trên ra. Pick 1 class (vd Bicycle), sau đó implement `schedulable?` method. Khi nó work với Bicycle, refactor cho các class còn lại.
+	- Inject `schedule` object vào class Bicycle, sau đó trong hàm `schedulable?` của Bicycle thì sẽ call `schedule.scheduled?(..)` để check 
+#### Extracting the Abstraction
+- Bicycle, Vehicle, Mechanic, ... không có mối quan hệ anh em (cha con) với nhau, nhưng cùng share nhau behavior là `Schedulable`.
+	- Cả kế thừa và share behavior qua module này đều có techniques giống nhau, đó là method lookup path - automatic message delegation.
+	- Nếu kế thừa là quan hệ `is-a`,  thì share role qua module này là quan hệ `behaves-like-a` 
+
+> [!note] Notes
+>
+> - Thừa kế: ***is-a***
+> - Share Role qua Module: ***behaves-like-a***
+>   
+>   Giống nhau ở chỗ, cả 2 cách này đều dựa trên *automatic message delegation*.
+>
+
+#### Looking Up Methods
+
+Ruby Methods look up path
+
+### Writing Inheritable Code
+
+#### Recognize the Antipatterns ⭐⭐
+- Cách để nhận biết code có thể sử dụng kế thừa:
+	- object phải sử dụng variable với tên  `type` hoặc `category` để check xem nên gửi message nào => Code phải thay đổi bất cứ khi nào có 1 type nữa xuất hiện => Tạo abstract superclass + subclasses for different types.
+	- Khi sending object check class của đối tượng nhận, sau đó lấy ra messages tương ứng. => Code phải thay đổi mỗi khi có 1 class mới => *Play a common role*, tạo ra 1 duck type's interface.
+
+#### Insist on the Abstraction
+
+> [!note] Notes
+> 
+> All of the code in an abstract superclass should apply to every class that inherits it. Superclasses should not contain code that applies to some, but not all, subclasses. This restriction also applies to modules: The code in a module must apply to all who use it.
+
+#### Honor the Contract
+
+> Subclasses agree to a contract; they promise to be substitutable for their superclasses.
+
+- Subclasses luôn phải đảm bảo có thể thay thế cho class cha:
+	- Subclasses phải respond tất cả các messages có trong interface, nhận giống các inputs và trả ra cùng loại output.
+	- Nếu không đáp ứng đủ điều kiện trên, mỗi khi object nào đó muốn call tới subclasses, nó sẽ phải check type của class để call logic khác đi.
+
+#### Use the Template Method Pattern
+
+- Sử dụng Template methods là cách để tách phần Abstract ra khỏi concrete. Define methods trong superclass, và để các class con override template methods.
+
+#### Preemptively Decouple Classes
+- Tránh việc viết code mà các thằng kế thừa phải gọi `super`, thay vào đó, sử dụng hook messages, cho phép classes con được tự add thêm thông tin local.
+
+#### Create Shallow Hierarchies
+- Khi code, chú ý tạo method lookup "nông nông" thôi, đừng tạo sâu quá. 
+	- Nếu tạo sâu, dài, rối quá thì sẽ làm cho search path for message resolution mất rất nhiều thời gian. 
+	- Lập trình viên thường có xu hướng quen với những classes ở top và ở bot (trong methods lookup path) mà không chú ý đến middle.
+
+### Summary
+
+- Khi các objects play a common role need to share behavior, hãy sử dụng Module.
+- Khi class include 1 module, các methods trong module sẽ được đưa vào trong method lookup path (giống như kế thừa). Do đó, Modules cũng nên áp dụng technique giống Kế thừa: Sử dụng template methods pattern để mời các class mà include chúng cùng contribute, implement hook methods để tránh send `super`.
+- Các classes con phải tuân thủ quy tắc Liskov Substitution Principles. Sub-type phải có thể thay thế được cho super-type.
+
 ## 8. Combining Objects with Composition
 
 ## 9. Designing Cost-Effective Tests

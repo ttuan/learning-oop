@@ -474,4 +474,93 @@ Ruby Methods look up path
 
 ## 8. Combining Objects with Composition
 
+- Composition là hành động mà sẽ combine các thành phần nhỏ lại với nhau: combine các object đơn giản, độc lập thành những cái lớn, phức tạp hơn.
+- Trong Composition, object lớn sẽ connect tới các thành phần via *has-a* relationship.
+
+- Tư tưởng là sẽ chia nhỏ objects của mình ra, build thằng lớn dựa trên những thằng nhỏ. Ví dụ:
+	- House - Rooms
+	- Library - Books
+	- User - Addresses
+	- Meal - Appetizers
+	- .....
+	- => House, Library, User, Meal, ... được gọi là các *composed objects*. Rooms, Books, Addresses, Appetizers, ... là các *roles*. 
+	- ***Composed object depends on the interface of the role.***
+
+#### Deciding between Inheritance and Composition
+- *Common idea*: Ta hoàn toàn có thể hoán đổi code Kế thừa sang thành Composition. Tuy nhiên cần cân nhắc kỹ:
+	- *Khi nào sử dụng Inheritance*
+		- `is-a` relationship: Khi clear về quan hệ cha con. Vd: Dog is an Animal
+		- Shared behavior: Các class con có các behavior chung, và có thể được kế thừa từ supper class
+		- Muốn tận dụng tính Đa hình: Khi bạn muốn sử dụng đa hình để treat different subclasses as instances of a superclass. (Ví dụ truyền vào 1 mảng videos, với mỗi loại video sẽ action tiếp)
+	- *Khi nào sử dụng Composition*
+		- `has-a` relationship: Khi object này nên chứa object còn lại. Vd: Car has an Engine
+		- Flexibility: Khi muốn linh hoạt trong việc thay đổi behavior bằng cách swap các component. (Ví dụ: Tài liệu có 3 loại: Word, Pdf, Excel, mỗi loại có behaviors print, typing, save, .. Giờ muốn tạo loại tài liệu thứ 4 có print giống Pdf, save giống Word, ... thì implement theo composition sẽ tiện hơn - *pick thằng behavior này cho vào thằng khác*)
+		- Tránh cây kế thừa quá sâu/dài.
+		- Single Responsibility Principle: Strictly theo principle này bằng cách chia nhỏ thành các concerns.
+
+- *Inheritance*
+	- *Lợi ích của Inheritance*
+		- Target khi apply OOD là để code: *transparent, reasonable, usable, and exemplary*. Kế thừa giúp mình được cái số 2, 3, 4. Method càng xa top sẽ càng sẽ dễ bị ảnh hưởng bởi thay đổi.
+		- Khi dùng kế thừa, code sẽ đáp ứng được nguyên tắc *open-closed* - Dễ mở rộng bằng cách thêm class mới mà không cần sửa lại existed code.
+		- Khi sử dụng abstract superclass, mình cũng đưa guide để cho các class con có thể override => Rõ ràng, dễ mở rộng
+		- Trong Ruby, `Numberic` class là supperclass của `Integer` và `Float`
+	- *Costs of Inheritance*
+		- Có thể chọn sai model khi áp dụng Kế thừa => Khi có 1 loại mới, với behavior mới thì sẽ không fit với code cũ => phải duplicate hoặc restructure code.
+		- *The flip side of the `reasonable` coin is the very high cost of making changes near the top of an incorrectly modeled hierarchy. In this case, the leveraging effect works to your disadvantage; small changes break everything.*
+		- *The opposing side of the `usable` coin is the impossibility of adding behavior when new subclasses represent a mixture of types.*: Kế thừa sẽ rất khó, nếu xuất hiện 1 type mới mà là mix behavior của các subclass cũ => Phải duplicate code của các behavior.
+		- *The other side of the exemplary coin is the chaos that ensues when novice programmers attempt to extend incorrectly modeled hierarchies.*
+	- 📝 *Your consideration of the use of inheritance should be tempered by your expectations about the population who will use your code.* 
+		-  Nếu code của mình là viết cho in-house application, mình có thể dự đoán được, hoặc đủ thông tin để đoán được tương lai => Kế thừa có thể là cost-effective solution.
+		- Nếu code viết cho wider audience, mình nên hạn chế việc để cây kế thừa quá sâu/ dài.
+
+- *Composition*
+	- Composed objects không phụ thuộc vào cấu trúc của cây kế thừa. Và chúng delegate their own messages.
+	- *Benefits of Composition*
+		- Tạo ra nhiều small objects, có responsibilities riêng. Mỗi thằng sẽ có behavior của chính nó => *transparent* + dễ hiểu code.
+		- Composed objects liên kết với các phần (parts) của nó qua interface, nên add thêm part khá dễ, bằng việc plugging in a new object that honor the interface => *resonable*
+		- Do được chia thành nhiều components nhỏ => easily *usable*
+	- *Costs of Composition*
+		- Composed objects được tạo bởi nhiều objects con quá. Từng phần thì khá rõ ràng, nhưng khi combine lại thì chưa chắc.
+		- The benefits of structural independence are gained at the cost of automatic message delegation. The composed object must explicitly know which messages to delegate and to whom. Identical delegation code many be needed by many different objects; composition provides no way to share this code.
+
+#### Choosing Relationship
+
+> “Inheritance is specialization.” 
+
+> "Inheritance is best suited to adding functionally to existing classes when you will use most of the old code and add relatively small amounts of new code.”
+
+> “Use composition when the behavior is more than the sum of its parts.”
+
+- Dùng kế thừa cho is-a relationship
+- Dùng Duck Types for behaves-like-a relationship
+	- Dùng cho các objects khác nhau mà play a common role. ví dụ: *schedulable, preparable, printable, persistable,...*
+	- Cách nhận biết:
+		- (1) Một object plays the role, nhưng role này không phải là object's main responsibility. Ví dụ: A bicycle behaves-like-a schedulable but it is-a bicycle.
+		- (2) Nhiều objects khác cũng có chung nhu cầu như thế, play a same role.
+		- => Nhiệm vụ của mình là tìm được *role* đó, define interface cho các duck type.
+- Dùng Composition cho has-a Relationship
+	- Many objects contain numerous parts but are more than the sums of those parts. Bicycles have-a Parts, but the bike itself is something more.
+	- This is-a versus has-a distinction is at the core of deciding between inheritance and composition. The more parts an object has, the more likely it is that it should be modeled with composition.
+
+### Summary
+
+- Composition allows you to combine small parts to create more complex objects such that the whole becomes more than the sum of its parts. Composed objects tend to consist of simple, discrete entities that can easily be rearranged into new combinations. These simple objects are easy to understand, reuse, and test, but because they combine into a more complicated whole, the operation of the bigger application may not be as easy to understand as that of the individual parts.
+
+- Composition, classical inheritance, and behavior sharing via modules are competing techniques for arranging code. Each has different costs and benefits; these differences predispose them to be better at solving slightly different problems.
+
+- These techniques are tools, nothing more, and you’ll become a better designer if you practice each of them. Learning to use them properly is a matter of experience and judgment, and one of the best ways to gain experience is to learn from your own mistakes. The key to improving your design skills is to attempt these techniques, accept your errors cheerfully, remain detached from past design decisions, and refactor mercilessly.
+
+- As you gain experience, you’ll get better at choosing the correct technique the first time, your costs will go down, and your applications will improve.
+
+
+
+> [!note] Notes
+>
+> ***Use Inheritance for is-a Relationships***
+> 
+> ***Use Duck Types for behaves-like-a Relationships***
+> 
+> ***Use Composition for has-a Relationships***
+
+
 ## 9. Designing Cost-Effective Tests

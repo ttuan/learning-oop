@@ -15,14 +15,14 @@ class Movie
   end
 end
 
-module DefaultPoint
+module DefaultPrice
   def frequent_renter_points(days_rented)
     1
   end
 end
 
 class RegularPrice
-  include DefaultPoint
+  include DefaultPrice
 
   def charge(days_rented)
     result = 2
@@ -42,7 +42,7 @@ class NewReleasePrice
 end
 
 class ChildrensPrice
-  include DefaultPoint
+  include DefaultPrice
 
   def charge(days_rented)
     result = 1.5

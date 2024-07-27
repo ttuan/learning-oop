@@ -11,7 +11,7 @@ Quản lý các dependencies này, sao cho dễ thích ứng nhất với các t
 - Design Principles: SOLID, DRY, LoD, ...
 - Design Pattern
 
-## 2. Designing Classes with a Single Resonsibility
+## 2. Designing Classes with a Single Responsibility
 
 - Thừa nhận rằng việc feature thay đổi => Code thay đổi là không thể tránh khỏi. Nhiệm vụ của chúng ta là tổ chức code sao cho nó dễ thích ứng với thay đổi nhất.
 - Class mà có nhiều hơn 1 responsibility thì sẽ khó để tái sử dụng. Ví dụ class chứa logic code làm việc A, việc B. Tôi chỉ muốn tái sử dụng phần việc A, nhưng lại phải include của code của phần việc B vào => không hợp lý.

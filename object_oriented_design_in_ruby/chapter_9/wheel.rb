@@ -54,3 +54,28 @@ class Gear
   end
 end
 # Now Gear is no longer dependent on Wheel. Gear is now dependent on an object that can respond to 'diameter'.
+
+# =============================================================================
+# Testing with Outgoing messages
+class Gear
+  attr_reader :chainring, :cog, :wheel, :observer
+
+  def initialize(chainring:, cog:, wheel:, observer:)
+    # ....
+    @observer = observer
+  end
+
+  def set_cog(new_cog)
+    @cog = new_cog
+    changed
+  end
+
+  def set_chainring(new_chainring)
+    @chainring = new_chainring
+    changed
+  end
+
+  def changed
+    observer.changed(chainring, cog)
+  end
+end

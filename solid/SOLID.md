@@ -62,7 +62,12 @@ Mỗi class chỉ nên đảm nhận 1 công việc (a single part of the functi
 
 > High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details. Details should depend on abstractions.
 
-### Example
+### Notes
+
+- Design is **all** about Dependency
+  - If you refer to something ------------> you depend on it.
+  - When the things you depend on change -> you must change.
+- To avoid dependencies, your code should be: *loosely coupled, highly cohensive, easily composable, context independent*
 
 
 ### Questions

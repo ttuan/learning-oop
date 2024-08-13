@@ -195,7 +195,7 @@ p moutain_bike.parts + road_bike.parts
 #==========================================================================
 # Create a PartsFactory
 module PartsFactory
-  def self.build(config, part_class: Part, parts_class = Parts)
+  def self.build(config, part_class: Part, parts_class: Parts)
     parts_class.new(
       config.collect { |part_config| create_part(part_config) }
     )

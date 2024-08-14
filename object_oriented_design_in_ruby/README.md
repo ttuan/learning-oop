@@ -1,5 +1,7 @@
 # Object-Oriented Design in Ruby
 
+This summarize is posted on my blog: https://brain.ttuan.xyz/40-Coding/Notes/Practical-Object-Oriented-Design-in-Ruby
+
 ## 1. Object-Oriented Design
 - Design Software bao gồm nhiều features. Features sẽ thay đổi. Thay đổi là điều không thể tránh khỏi.
 - Để implement features thì cần sự tương tác giữa các *objects*. Các objects này sẽ gửi *messages* cho nhau, từ object này tới object kia. Điều này đòi hỏi là object A phải biết về object B. Điều này tạo ra *dependencies* giữa các object. Biết quá nhiều dẫn tới dependencies nhiều, trong khi cái dependencies này rất dễ bị thay đổi. 
@@ -564,3 +566,139 @@ Ruby Methods look up path
 
 
 ## 9. Designing Cost-Effective Tests
+
+- 3 skills để viết code dễ thích ứng với sự thay đổi:
+	- (1) Hiểu về OOD - Object-Oriented Design. 
+	- (2) Skilled at refactoring code: Improve the internal structure but not alter the external behavior of the code.
+	- (3) Write high-value tests: Give you confidence to refactor
+
+### Internal Testing
+
+- *Knowing What to Test*
+	- Incoming messages: public interface của object ✅
+	- Outgoing messages: Là messages bên ngoài - incoming message của objects khác.
+		- `queries messages` - Retrieve information - messages mà request lấy thông tin từ 1 object khác, expect lấy được data/state mà không gây ra side effects gì.
+			- Khi test thì ensure correct information được trả về, hoặc không cần test.
+		- `command messages` - Perform actions - messages bảo object khác thực hiện 1 action. Thường sẽ change state hoặc có side effect ✅
+			- Khi test thì cần verify correct actions được thực hiện, và expect side effects (file được ghi, data record được save lại, ...)
+
+- *Knowing When to Test*
+	- Write tests first, whenever it makes sense to do so.
+- *Knowing How to Test*
+	- When testing, it’s useful to think of your application’s objects as divided into two major categories. The first category contains the object that you’re testing, referred to from now on as the object under test. The second category contains everything else.
+	- Your tests must obviously know things about the first category, that is, about the object under test, but they should remain as ignorant as possible about the second.
+	- Your tests could stand completely inside of the object under test, with effective access to all of its internals.
+
+### Testing Incoming Messages
+
+
+#### Deleting Unused Interfaces
+- Trước khi viết test, thử list ra các incoming/Outgoing messages của 1 class, và các dependences của nó. 
+	- ![[00 Meta/01 Attachments/Images Vault/Pasted image 20240813100829.png]]
+	- Nếu thấy 1 incoming message mà không có dependents, thì hãy xóa nó đi =)) Sao cần phải viết 1 method mà không ai gọi đến nó? 
+
+
+#### Proving the Public Interface
+- Test incoming message bằng cách so sánh value, state mà method đó trả về, để chứng minh là nó trả về correct value trong mọi trường hợp.
+- Trong ví dụ về Gear and Wheel, nếu phải [khởi tạo Wheel trong Gear](https://github.com/ttuan/learning-oop/blob/main/object_oriented_design_in_ruby/chapter_9/wheel.rb) thì sẽ gặp vấn đề:
+	- Gear and Wheel are coupled in the code *and* in the tests.
+	- If Wheels are expensive to create, the Gear test pays that cost even though it has no interest in Wheel. If Gear is correct but Wheel is broken, the Gear test might fail in a misleading way
+
+#### Isolating the Object under Test
+- Trong ví dụ về Gear và Wheel ở trên, cái khó là trong code và test đang bị *invisible coupling*, tức là trong code thì có khởi tạo Wheel.new, nhưng trong test thì chỉ khởi tạo Gear. Việc sử dụng Dependencies Injection sẽ giải quyết vấn đề này.
+
+#### Injecting Dependencies Using Classes
+
+- Việc inject `wheel` vào `Gear` đang khá okiela, vì khi thay đổi ở wheel, mà quên sửa code ở Gear, thì test gear sẽ báo lỗi. 
+- Tuy nhiên, vẫn còn nhiều trường hợp có thể xảy ra: Nếu ta có hàng trăm `Diameterizable`s thì sao? Nên chọn cái nào để khởi tạo trong code test của Gear? 
+	- Nếu Wheel là thằng dễ nhất thì ta có thể chọn nó để khởi tạo trong Gear Test. Nhưng như thế sẽ không ổn nếu code của Diameterizables khác bị thay đổi, vì lúc này Gear Test vẫn pass (do đang khởi tạo Wheel)
+
+#### Injecting Dependencies as Roles ⭐⭐⭐
+- Thay vì pass Wheel vào thì ta pass `Diameterizable` vào. Có thể sử dụng test double.
+- Injecting this double decouples the Gear test from the Wheel class. It no longer matters if Wheel is slow because DiameterDouble is always fast.
+- Việc code test như trên vẫn gặp vấn đề: Nếu code của Diameterizable thay đổi, update hàm `diameter` trong wheel về thành `width`, mà không thay đổi trong Gear class, test vẫn pass. Tuy nhiên đây là lỗi của lập trình viên, chứ không phải là của tool =))
+	- Application có 1 `Diameterizable` role. Role này có 1 player - `Wheel`. 
+	- Khi `GearTest` tạo ra `DiameterDouble`, nó đã tạo ra second player of the role. 
+	- Khi interface của role thay đổi, tất cả players của role đều phải adopt the new interface. Tuy nhiên, do `DiameterDouble` là role thứ 2, nhưng nó nằm trong test. Nếu không thay đổi thì sẽ không đúng với principle (mọi players phải update theo new interface) => Fail.
+
+=> Vấn đề trên được gọi là ***Living the Dream*** problem.
+#### Using Test to Document Roles
+
+- Role sẽ gần như invisible trong source code của mình. Nên khi viết test cho Wheel, nên có thêm cả đoạn "This defines Diameterizable" - thêm đoạn code test `wheel` phải phản hồi lại method `diameter`
+
+#### Notes
+- Inject dependencies sẽ decouple, giúp cho việc test/ code dễ dàng và linh hoạt hơn.
+- Khi inject, ta thường phân vân giữa việc inject `a real or a fake object`
+	- Inject real object thì giúp ta ensures được khi nào test break, tuy nhiên việc chạy test sẽ lâu.
+	- Inject doubles (fake) object thì test chạy rất nhanh, nhưng để lại 1 "lỗ hổng", có thể rơi vào case test chạy vẫn ok nhưng application code lại fail.
+
+> Notice that the act of testing did not, by itself, force an improvement in design. Nothing about testing made you remove the coupling and inject the dependency. 
+> 
+> Reducing the coupling is up to you and relies on your understanding of the principles of design.
+
+
+### Testing Private methods
+
+#### Ignore Private methods during Tests
+
+#### Removing Private methods from the Class under Test
+- Nếu class có nhiều private methods quá thì cân nhắc tách ra thành object mới, tránh việc class hiện tại có quá nhiều responsibility. Cách này sẽ tốt khi new interface stable =)) 
+
+#### Choosing to Test a Private method
+
+> The rules of thumb for testing private methods are: Never write them, and if you do, never ever test them, unless of course it makes sense to do so. Therefore, be biased against writing these tests but do not fear to do so if this would improve your lot.
+
+### Testing Outgoing Messages
+
+#### Ignoring Query Messages
+
+> Messages that have no side effects are known as query messages.
+
+```ruby
+def gear_inches  
+	ratio * wheel.diameter 
+end
+```
+
+`wheel.diameter` là query messages, vì nó không có side effect. 
+The consequences of sending diameter are hid- den inside of Gear. Because the overall application does not need this message to be sent, your tests need not care.
+
+Nếu mình vẫn cứ test cho `wheel.diameter` thì sẽ bị couple code, vì method này đã được test bên wheel rồi.
+
+#### Proving Command Messages
+
+- Command messages => Những method có side effect, mà sẽ call outgoing => Cần phải test là *chúng có được gọi*. 
+- Sử dụng `mock` để expect là các methods này có được gọi.
+
+### Testing Duck Types
+
+#### Testing Roles
+
+- Define Interface trước khi viết test. Try to refactor code trước. Implement that interface in every player of the roles
+
+#### Using Role Tests to Validate Doubles
+- Sử dụng `DiameterizableInterfaceTest` để validate các players phải play a role. Tránh trường hợp "Living in Dream" (test vẫn pass do mock, nhưng lại fail trong application code)
+
+- Viết InterfaceTest, và include nó vào trong Double Object. Như thế sẽ tránh được việc thay đổi implement trong interface mà code test vẫn pass.
+
+### Testing Inherited Code
+
+#### Specifying the Inherited Interface
+
+- Verify lại xem tất cả các objects trong cây kế thừa có làm đúng theo nguyên tắc Liskov Substitution Principle hay không.
+- Tương tự như Role, viết interface test cho abstract class. Eg: `BicycleInterfaceTest`
+
+#### Specifying Subclass Responsibilities
+- Cần test là các subclasses phải implement method. Eg: `BicycleSubclassTest`
+
+
+#### Confirming Superclass Enforcement
+
+- Create `BicycleTest` for super class
+#### Test Unique Behavior
+- Testing Concrete Subclass Behavior
+- Testing Abstract Superclass Behavior: Có thể tạo double`BikeDouble < Bicycle` và test trên object `@double = BikeDouble.new` đó. (Object đại diện cho subclass của Bicycle)
+
+
+## References
+- [Speric - poodir-notes](https://gist.github.com/speric/31ae0987d21eac1d4f87)
